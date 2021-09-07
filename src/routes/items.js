@@ -1,12 +1,13 @@
 import { Router } from 'express'
 import { ItemNotFoundError } from '../errors/ItemNotFoundError.js'
 import { getAllItems, getItem, createItem, updateItem, deleteItem } from '../services/items.js'
+import { userAuth } from '../middlewares/user-auth.js'
 
 const router = Router()
 
-router.get('/items', async (req, res, next) => {
+router.get('/items', userAuth, async (req, res, next) => {
   try {
-    const items = await getAllItems()
+    const items = await getAllItems(req.user)
     const mappedItems = items.map((item) => {
       return {
         _id: item._id,
@@ -24,9 +25,9 @@ router.get('/items', async (req, res, next) => {
   }
 })
 
-router.get('/items/:id', async (req, res, next) => {
+router.get('/items/:id', userAuth, async (req, res, next) => {
   try {
-    const item = await getItem(req.params.id)
+    const item = await getItem(req.params.id, req.user)
     res.json({
       error: false,
       data: {
@@ -42,7 +43,7 @@ router.get('/items/:id', async (req, res, next) => {
   }
 })
 
-router.post('/items', async (req, res, next) => {
+router.post('/items', userAuth, async (req, res, next) => {
   try {
     const {
       name,
@@ -72,7 +73,8 @@ router.post('/items', async (req, res, next) => {
       name,
       quantity,
       unit,
-      observations
+      observations,
+      user: req.user
     }
     const createdItem = await createItem(itemInput)
     res.json({
@@ -90,7 +92,7 @@ router.post('/items', async (req, res, next) => {
   }
 })
 
-router.put('/items/:id', async (req, res, next) => {
+router.put('/items/:id', userAuth, async (req, res, next) => {
   try {
     const { id } = req.params
     const {
@@ -123,16 +125,16 @@ router.put('/items/:id', async (req, res, next) => {
       unit,
       observations
     }
-    await updateItem(id, editFields)
+    await updateItem(id, editFields, req.user)
     res.status(204).end()
   } catch (error) {
     next(error)
   }
 })
 
-router.delete('/items/:id', async (req, res, next) => {
+router.delete('/items/:id', userAuth, async (req, res, next) => {
   try {
-    await deleteItem(req.params.id)
+    await deleteItem(req.params.id, req.user)
     res.status(204).end()
   } catch (error) {
     next(error)

@@ -5,6 +5,7 @@ import itemsRoutes from './routes/items.js'
 import { connectDatabase } from './config/database.js'
 import { ItemNotFoundError } from './errors/ItemNotFoundError.js'
 import dotenv from 'dotenv'
+import { UserUnauthorizedError } from './errors/UserUnauthorizedError.js'
 
 dotenv.config()
 
@@ -16,6 +17,9 @@ app.use(itemsRoutes)
 app.use((error, req, res, next) => {
   if (error instanceof ItemNotFoundError) {
     return res.status(404).end()
+  }
+  if (error instanceof UserUnauthorizedError) {
+    return res.status(401).json({ error: true, msg: error.message })
   }
   console.error(error)
   res.status(500).json({

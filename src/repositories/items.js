@@ -1,7 +1,9 @@
 import { ItemModel } from "../models/item.js"
 
-export const getItems = () => {
-  return ItemModel.find()
+export const getItems = (userId) => {
+  return ItemModel.find({
+    user: userId
+  })
 }
 
 export const getById = async (id) => {
